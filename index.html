@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>计算器</title>
+	<style type="text/css">
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		.box{
+			height: 350px;
+			width: 300px;
+			bottom: 0;		
+			top: 0;
+			left: 0;
+			right: 0;
+			position: absolute;
+			margin: auto;
+			background-color: #242FE1;
+
+		}
+		.box1{
+			width: 300px;
+			height: 250px;
+			display: grid;
+			grid-template-areas: repeat(4, 25%);
+			grid-template-columns: repeat(4, 25%);
+			text-align: center;
+		}
+		.item{
+			background-color: #bfa;
+			margin: 4px;
+			line-height: calc(250px * 0.25);
+			box-shadow: 0px 0px 0px 0px #333;
+			border-radius: 5px;
+		}
+		.inpt{
+			height: 50px;
+			width: 250px;
+			/*padding-left: 20px;*/
+			margin: 0 auto
+		}
+		.item:hover{
+			background-color: #6352FC;
+		}
+	</style>
+</head>
+<body>
+	<div class="box">
+		<input type="text" class="inpt" id="ipt" placeholder="0">
+		<div class="box1">
+			<div class="item">7</div>
+			<div class="item">8</div>
+			<div class="item">9</div>
+			<div class="item">+</div>
+			<div class="item">4</div>
+			<div class="item">5</div>
+			<div class="item">6</div>
+			<div class="item">-</div>
+			<div class="item">1</div>
+			<div class="item">2</div>
+			<div class="item">3</div>
+			<div class="item">&#215;</div>
+			<div class="item">0</div>
+			<div class="item">C</div>
+			<div class="item">=</div>
+			<div class="item">/</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		(function(){
+			var items = document.getElementsByClassName('item');
+			// var items = document.querySelectorAll('.item');
+			var ipt = document.getElementById('ipt');
+			var currentTxt = null;
+			var firstNum = null;
+			var secondNum = false;
+			var opCode = null;
+			var count = 0;
+			var init = function(){
+				var len = items.length;
+				for (var i = 0; i < len; i++) {
+					items[i].onclick = handleClickFn;
+					// items[i].addEventListener('click', function(){
+					// 	var currentTxt = this.innerHTML;
+					// 	console.log(this.innerHTML);
+					// 	ipt.value = currentTxt;
+					// }, false)
+				}
+			}
+
+			var handleClickFn = function(){
+				currentTxt = this.innerHTML;
+				// 保存点击的文本内容
+				// console.log(currentTxt);
+				// 判断文本内容
+				switch(currentTxt){
+					case '+':
+					case '-':
+					case '×':
+					case '/':
+					// 当多次点击时，由于firstNum和ipt.value都有值，就会以第一次计算结果ipt.value为firstNum，两个值相同会多次递加计算 声明一个变量，第一次点击计算为1，只有点击数字后为0后，再次点击计算再次变1，才进行计算，否则条件不成立，不计算。
+					++ count;
+					// 做个一个计算条件，firstNum由数字default完成，当走到这时，获得点击计算符前的值，和点击计算符后的值 当点击计算符前有值，则进行计算；
+					if (firstNum && count <= 1) {
+						ipt.value = calcFn(firstNum,ipt.value);
+						// 在input中显示计算结果，次结果为点击计算符前的值；
+					}
+					firstNum = ipt.value;
+					// 上面函数计算结果赋值为点击计算前的值；
+					opCode = currentTxt;
+					// 保存计算符，用于函数计算条件分支；
+					secondNum = true;
+					// 当点击了计算符后，意味着下一次的数字输入是一个全新独立的数字，使ipt.value等于输入的新值
+					break;
+
+					case '=':
+					// 当fristNum有值，则未进行计算函数，不做操作
+					if(!firstNum) return;
+					// 当进行了函数计算后，firstNum为空串，进行计算
+					if (count){
+						// count 在点击计算符后为1，点击数字后为0，代表没有第二个值来参与计算，那么将第一个值保存为第二个值，清空第一个值，不进行计算
+						ipt.value = firstNum;
+						firstNum = null;
+					}else {
+						// 当count为0，两种情况，1、有第二个值，正常进行计算，2、没有第二个值，第二个值为null，任何数自己 + null，等于自己
+						ipt.value = calcFn(firstNum, ipt.value);
+					}
+					break;
+					case 'C':
+					// 清空，直接内值为空串
+					return ipt.value = '';
+	
+					default:
+					// 输入数字时，点击了计算符和未点击计算符的情况判断
+					if (secondNum) {
+						// 当点击了计算符后，secondNum为true，下一次的数字输入为新值，做赋值操作。
+						ipt.value = currentTxt;
+					}else {
+						// 当连续点击数字时，做字符串拼接操作
+						ipt.value += currentTxt;
+					}
+					// 当新值操作完成后，secondNum为false，再次输入数字，做字符串拼接；
+					secondNum = false;
+					// 
+					count = 0;
+				}
+			}
+
+			function calcFn(n1, n2){
+				// 计算函数，想要计算那就要获得点击计算符前的值，和点击计算符后的值，以及计算符；
+				// console.log(firstNum);
+				firstNum = '';
+				// console.log(firstNum);
+				// 计算完成后使第一位传参为空串，防止多次点击计算符多次计算（n1,n2都有值得话，点击一次计算符就会计算一次）
+				// console.log(n1,n2);
+				switch(opCode){
+					// 判断计算符类型，进行相应的计算
+					case '+':
+						return parseInt(n1) + parseInt(n2);
+					case '-':
+						return n1 - n2;
+					case '×':
+						return n1 * n2;
+					case '/':
+						return n1 / n2;
+				}
+				// firstNum = '';
+				// 不能放在下边，上边的return会直接结束，根本到不了下边来
+				// console.log(firstNum);
+			}
+			init();
+		})();
+	</script>
+</body>
+</html>
